@@ -179,7 +179,8 @@ length(five.u)
 
 
 ```{R}
-#Let's add more data so we can continue to delve into what can be donetwo.ab
+#Let's add more data so we can continue to delve into what can be done
+two.ab
 #Repeating what we did earlier, to process these lists so that we can incorporate them into an abundance matrix
 two.ab=data.frame("two", two.ab)
 two.ab
@@ -480,22 +481,407 @@ bray = vegdist(wab, "bray")
 bray
 ```
 
+
+
+
+
 ## How to finish this portfolio
 
 The last step in finishing this portfolio is to prepare two types of lists. 
+
 a. lists of three counties
 b. some other type of list - ideally get three lists of the same type that are interesting to you (look back to Portfolio 2.1 on Courseworks)
-
 
 Process your county lists until they are transformed into a species abundance matrix. 
 
 Then compute some diversity indices. 
-
-Before finalizing and turning in our notebook, add  commentary. 
-
-How do you interpret the indices computed for the County data?
+Before finalizing and turning in our notebook, add  commentary.
 
 
-Now process the other three lists in the same fashion.
+## a.Three counties
+```{r}
+Kings <- BIEN_occurrence_county(country="United States", state="New York", county = "Kings")
+head(brooklyn)
+tail(brooklyn)
+Manhattan <- BIEN_occurrence_county(country="United States", state="New York", county = "New York")
+head(Manhattan)
+tail(Manhattan)
+attributes(Manhattan)
+Queens <- BIEN_occurrence_county(country="United States", state="New York", county = "Queens")
+head(Queens)
+tail(Queens)
+attributes(Queens)
+```
 
-How do you interpret indices computed from your second type of data? 
+```{r}
+manhattan.occ=Manhattan[c(1)]
+head(manhattan.occ)
+
+#ISSUE
+queens.occ=Queens[c(1)]
+head(queens.occ)
+
+kings.occ=Kings[c(1)]
+head(kings.occ)
+```
+
+```{r}
+manhattan.ab=count(manhattan.occ)
+head(manhattan.ab)
+queens.ab=count(queens.occ)
+kings.ab=count(kings.occ)
+
+```
+
+```{r}
+
+manhattan.ab=data.frame("Manhattan", manhattan.ab)
+names(manhattan.ab)<-c("ListID", "SpeciesID", "Freq")
+head(manhattan.ab)
+
+queens.ab=data.frame("Queens", queens.ab)
+names(queens.ab)<-c("ListID", "SpeciesID", "Freq")
+head(queens.ab)
+
+kings.ab=data.frame("Kings", kings.ab)
+names(kings.ab)<-c("ListID", "SpeciesID", "Freq")
+head(queens.ab)
+```
+
+
+#All three bound together
+```{r}
+tricounty.ab=rbind(manhattan.ab, queens.ab, kings.ab)
+head(tricounty.ab)
+tail(tricounty.ab)
+dim(tricounty.ab)
+threecounties.ab<-matrify(tricounty.ab)
+head(threecounties.ab)
+
+dim(threecounties.ab)
+```
+
+
+#diversity indexes of counties
+
+#Shannon diversity index, bray, and jaccard/binary on
+```{r}
+brooklyn<-diversity(threecounties.ab, index = "shannon")
+#brooklyn<-diversity(counties.ab, index = "Kings")
+brooklyn
+
+#PROBLEM? brooklyn = vegdist(threecounties.ab, "Kings")
+
+brooklyn
+bray = vegdist(threecounties.ab, "bray")
+bray
+
+jaccard = vegdist(threecounties.ab, "jaccard", binary=T)
+jaccard
+```
+
+```{r}
+threecounties.ab
+shannon<-diversity(threecounties.ab, index = "shannon")
+shannon
+```
+
+
+```{r}
+threecounties.ab
+simpson<-diversity(threecounties.ab, index = "simpson")
+simpson
+```
+
+#I don't understand exactly what I'm looking at below. It doesn't seem to match the data?
+```{r}
+#cumulative number of species across all three
+
+plotthreecounties<-specaccum(threecounties.ab, method="random", permutations=100)
+plot(plotthreecounties$sites, plotthreecounties$richness,
+     xlab="Number of Sites",
+     ylab="Species Richness",
+     main="Manhattan, Queens, and Kings Counties")
+plotthreecounties2<-specaccum(threecounties.ab, method="collector", permutations=100)
+plot(plotthreecounties2$sites, plotthreecounties$richness,
+     xlab="Number of Sites",
+     ylab="Species Richness",
+     main="Manhattan, Queens and Kings, Counties: Rareification")
+```
+
+#Below is not really working out
+```{r}
+head(threecounties.ab)
+threecountiestime=metaMDS(threecounties.ab, distance="bray", k=2) 
+
+#This looks the same as the example code, so I must not have been setting things up correctly? Or not enough data? Stress seems to be at 0.0
+
+plot(threecountiestime)
+threecountiestime.plot<-ordiplot(threecountiestime,type="n") 
+points(threecountiestime.plot, "species", pch=21, col="green", bg="light blue")
+```
+
+```{r}
+threecountiestime.plot<-ordiplot(threecountiestime,type="n") #Ordination plot function especially for congested plots
+points(threecountiestime.plot, "sites", col="red", cex=0.9)
+
+threecountiestime.plot<-ordiplot(threecountiestime,type="n") #Ordination plot function especially for congested plots
+points(test.plot, "species", pch=21, col="red", bg="yellow")
+text(test.plot, "sites", col="blue", cex=0.9)
+
+threecountiestime.plot<-ordiplot(threecountiestime,type="n") #Ordination plot function especially for congested plots
+text(threecountiestime.plot, "species", pch=21, col="red", bg="yellow")
+points(threecountiestime.plot, "sites", col="green", cex=0.9)
+```
+
+
+
+#How do you interpret the indices computed for the County data?
+
+It looks like I may have misunderstood how to use these; it looks like I don't have enough data for the Counties in some instances. 
+
+
+#The shannon index was 4.204 for Manhattan, 3.576 for Queens, and 3.422 for Kings (estimated to three decimals). So from what I've read, a high shannon index would mean high uncertainty, which would mean a higher diversity. These each have similar diversity, though Manhattan apparently has more diversity. BUT these are also hitting or exceeding the limits of the index, no? So I feel like I must have done something terribly wrong. Maybe I was not supposed to bind the datasets beforehand (threecounties.ab)? 
+
+#The simpson index approached 1; does this mean that each country is just about as diverse as the others? Yet, 1 should be infinite diversity, which doesn't really seem right for these areas. I'm unsure whether I should think of this as a ratio between each sample in a sort of circle/enclosed system that we are looking at with these ratios, but it's my first thought to do so. I also read that this is a measure of dominance, though, and that if it is high like this, it indicates low diversity, so maybe that's really how I should conceptualize this? I also read that this index is not linear, making the implications of .000'th decimals a bit more relevant. 
+
+#The bray index is approaching 1 for all three counties. I think, as far as I know right now, that this means the abundance in each sample are very similar to one another, I think. If this is so, I now wish I had used counties that were not local at all to do a better comparison, and will play with this on my own (and also try to check whether I did something off to keep getting near 1:1 ratios)
+
+#I'm also unsure how to understand the way the jaccard index comes out, unless I did something wrong. It looks like it's saying that both Manhattan and Queens are .9912793 in some respect, Manhattan and Kings are both .9902913 in another respect, and Queens and Kings are both .9726027 in another respect; part of why I was thinking of the math being used as a closed system between three data sets. But, each of these are approaching the limit, which is 1, meaning the ratio is approaching 1. Does this then mean the ratio of present to absent species are about equal in each, and so each county has much overlap in species? Or does it mean the ratio indicates that each are just missing the same amount of species? I was trying to study up, but this is new territory for me completely (I’d never heard of any of this before), so it was hard to get it all in. 
+
+-------
+
+
+## b.Three plant lists - 
+
+
+```{r}
+setwd("/Users/Natalie/Desktop/portfolio-2-eilatanz-MANUAL/")
+planto=read.csv("04 Plant-o-matic Brooklyn.csv")
+head(planto)
+tail(planto)
+names(planto_list)<-c("ListID", "SpeciesID", "Freq")
+speciesID=paste(planto$Genus, planto$Species, sep=" ")
+speciesID
+
+```
+
+```{r}
+setwd("/Users/Natalie/Desktop/portfolio-2-eilatanz-MANUAL/")
+queenspersist=read.csv("01 Science publication persisting plants in queens CLEANED.csv")
+
+queenspersist
+#stringsAsFactors = FALSE
+head(queenspersist)
+tail(queenspersist)
+speciesID=(queenspersist$Species)
+speciesID
+```
+
+```{r}
+setwd("/Users/Natalie/Desktop/portfolio-2-eilatanz-MANUAL/")
+chelsea=read.csv("02 Welikia Project 24 West 9th street Chelsea Manhattan 1609.csv")
+
+#stringsAsFactors = FALSE removed from above, not needed
+head(chelsea)
+tail(chelsea)
+speciesID=paste(chelsea$Genus, chelsea$Species, sep=" ")
+speciesID
+
+```
+
+```{r}
+
+chelsea_list=count(speciesID)
+head(chelsea_list)
+#df<-data.frame(words = unlist(words))
+chelsea_list=data.frame(chelsea_list)
+chelsea_list=data.frame("chelsea", chelsea_list)
+names(chelsea_list)<-c("ListID", "SpeciesID", "Freq")
+
+head(chelsea_list)
+speciesID
+
+queenspersist_list=count(speciesID)
+head(queenspersist_list)
+#df<-data.frame(words = unlist(words))
+queenspersist_list=data.frame(chelsea_list)
+queenspersist_list=data.frame("queenspersist", queenspersist_list)
+names(queenspersist_list)<-c("ListID", "SpeciesID", "Freq")
+
+head(queenspersist_list)
+speciesID
+
+planto_list=count(speciesID)
+head(planto_list)
+planto_list=data.frame(planto_list)
+planto_list=data.frame("planto", planto_list)
+names(planto_list)<-c("ListID", "SpeciesID", "Freq")
+
+head(planto_list)
+speciesID
+```
+
+```{r}
+#Run each of these separately for some reason...
+chelsea_list
+queenspersist_list
+planto_list
+#combine the lists
+ThenNow=rbind(planto_list, chelsea_list)
+dim(ThenNow)
+#matrify function
+plantochel=matrify(ThenNow)
+plantochel
+```
+#how might I (and should I) give more rows with fewer columns/flip the axis on the above?
+
+#I tried to figure out why I could not bind all three using this method, and tried looking up how to add another column to the queens list (which is the problem apparently), but can't find out how. What am I doing wrong? Or am I using this for the wrong purpose? I did bind all three below in part b, though. 
+
+```{r}
+ThenNow2=rbind(planto_list, chelsea_list, queenspersist_list)
+dim(ThenNow2)
+#matrify function
+plantochelquee=matrify(ThenNow2)
+plantochelquee
+```
+
+
+#diversity indices
+
+
+#Simpson index
+```{r}
+simpson<-diversity(plantochel, index = "simpson")
+shannon<-diversity(plantochel, index = "shannon")
+simpson
+shannon
+jaccard = vegdist(plantochel, "jaccard")
+jaccard
+bray = vegdist(plantochel, "bray")
+bray
+```
+
+
+#lengths
+```{r}
+planto
+length(planto)
+
+chelsea
+length(chelsea)
+
+queenspersist
+length(queenspersist)
+```
+
+
+#adding data, maybe I can do this better using below with species richness? I have a hard time understanding exactly what I'm calling from the server/databases with some of the commands, I think.
+```{r}
+planto.ab=count(planto)
+planto.ab
+ 
+planto.u=unique(planto)
+planto.u
+length(planto.u)
+
+
+chelsea.ab=count(chelsea)
+chelsea.ab
+
+chelsea.u=unique(chelsea)
+chelsea.u
+length(chelsea.u)
+
+queenspersist.ab=count(chelsea)
+queenspersist.ab
+
+queenspersist.u=unique(queenspersist)
+queenspersist.u
+length(queenspersist.u)
+
+```
+#adding more data
+
+```{r}
+
+#add third list 
+planto.ab
+planto.ab=data.frame("planto", planto.ab)
+planto.ab
+
+chelsea.ab=data.frame("chelsea", chelsea.ab)
+chelsea.ab
+
+queenspersist.ab=data.frame("queenspersist", queenspersist.ab)
+queenspersist.ab
+
+names(planto.ab)<-c("ListID", "SpeciesID", "Freq")
+names(chelsea.ab)<-c("ListID", "SpeciesID", "Freq")
+names(queenspersist.ab)<-c("ListID", "SpeciesID", "Freq")
+
+#binding all three worked here, though:
+abc=rbind(queenspersist.ab, planto.ab, chelsea.ab)
+abc
+dim(abc)
+abc<-abc[,2:4]
+lotto<-matrify(abc)
+lotto
+```
+
+
+```{r}
+ lottorandom<-specaccum(lotto, method="random", permutations=100)
+plot(lottorandom$sites, lottorandom$richness,
+     xlab="Number of Sites",
+     ylab="Species Richness",
+     main="Now with three samples, random order")
+lottocollect<-specaccum(lotto, method="collector", permutations=100)
+plot(lottocollect$sites, lottorandom$richness,
+     xlab="Number of Sites",
+     ylab="Species Richness",
+     main="As encountered, with three samples")
+```
+
+```{r}
+#library(vegan)
+lotto
+shannonlotto<-diversity(lotto, index = "shannon")
+shannonlotto
+```
+
+```{r}
+lotto
+simpsonlotto<-diversity(lotto, index = "simpson")
+simpsonlotto
+```
+
+```{r}
+simpsonlotto<-diversity(lotto, index = "simpson")
+shannonlotto<-diversity(lotto, index = "shannon")
+simpsonlotto
+shannonlotto
+jaccardlotto = vegdist(lotto, "jaccard")
+jaccardlotto
+braylotto = vegdist(lotto, "bray")
+braylotto
+```
+
+
+#I'm not clear on how to read the below output. Am I getting a bray index for each species across all three samples?
+```{r}
+braylotto = vegdist(lotto, "bray") 
+braylotto
+```
+
+```{r}
+jaccardlotto = vegdist(lotto, "jaccard", binary=T)
+jaccardlotto
+```
+
+ 
+#How do you interpret indices computed from your second type of data? 
+
+#So, in the lists of two bray and jaccard got 0, simpson and shannon each approached or got to the limit (.99 and 3.99); this occurred over and over. In the list of three, bray and jacquard each got 1, I think? As before, I think I must have some issue with my data or my code, and since this happened before, I’m guessing it’s my code? I’m not familiar enough with the concepts to feel like this is actually accurate, but it seems not to be to me so far. 
+
+#The species richness plot I made was… not linear, but had quite the vector with the three datasets/samples. The resulting plot was also exactly the same as with random order. I think I must not be grasping what I’m calling down and why when I’m getting the data, or else something is wrong with my code. I need to spend more time with this I think, especially over break, if I'm to use it for a project. And I'd like to come to office hours for some help if I can! I feel a bit stunted, with the conceptual stuff and the coding being very new to me. 

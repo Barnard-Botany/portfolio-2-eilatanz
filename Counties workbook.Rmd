@@ -7,6 +7,8 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
+
+
 ```{r}
 plot(cars)
 ```
@@ -21,17 +23,17 @@ library(plyr)
 library(BIEN)
 #As you know, you can obtain species occurrence data from the BIEN database, or from another even more comprehensive data base called gbif (gbif.org). Occurrence data is a type of abundance data, and it can also be used to figure out presence-absence data. 
 
-bronx <- BIEN_occurrence_county(country="United States", state="New York", county = "Bronx")
-head(bronx)
-tail(bronx)
+brooklyn <- BIEN_occurrence_county(country="United States", state="New York", county = "Kings")
+head(brooklyn)
+tail(brooklyn)
 manhattan <- BIEN_occurrence_county(country="United States", state="New York", county = "New York")
 head(manhattan)
 tail(manhattan)
 attributes(manhattan)
-westchester <- BIEN_occurrence_county(country="United States", state="New York", county = "Westchester")
-head(westchester)
+queens <- BIEN_occurrence_county(country="United States", state="New York", county = "Queens")
+head(queens)
 tail(westchester)
-attributes(westchester)
+attributes(queens)
 Richmond <- BIEN_occurrence_county(country="United States", state="New York", county = "Richmond")
 Queens <- BIEN_occurrence_county(country="United States", state="New York", county = "Queens")
 Kings <- BIEN_occurrence_county(country="United States", state="New York", county = "Queens")
@@ -188,5 +190,17 @@ test.plot<-ordiplot(example_NMDS,type="n") #Ordination plot function especially 
 text(test.plot, "species", pch=21, col="red", bg="yellow")
 points(test.plot, "sites", col="blue", cex=0.9)
 
+
+```
+
+
+#As appears in the original file; I used this file to help figure out some of the counties concepts. 
+#Sample code below from my own thing - just trying to understand how to use VEGAN in different ways
+```{r}
+data("BCI")
+diversity(BCI, index = "shannon")
+fisher.alpha(BCI)
+specie <- specaccum(BCI)
+plot(specie)
 
 ```
