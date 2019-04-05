@@ -641,13 +641,20 @@ points(threecountiestime.plot, "sites", col="green", cex=0.9)
 It looks like I may have misunderstood how to use these; it looks like I don't have enough data for the Counties in some instances. 
 
 
-#The shannon index was 4.204 for Manhattan, 3.576 for Queens, and 3.422 for Kings (estimated to three decimals). So from what I've read, a high shannon index would mean high uncertainty, which would mean a higher diversity. These each have similar diversity, though Manhattan apparently has more diversity. BUT these are also hitting or exceeding the limits of the index, no? So I feel like I must have done something terribly wrong. Maybe I was not supposed to bind the datasets beforehand (threecounties.ab)? 
+#The shannon index was 4.204 for Manhattan, 3.576 for Queens, and 3.422 for Kings (estimated to three decimals). So from what I've read, a high shannon index would mean high uncertainty, which would mean a higher diversity. These each have similar diversity, though Manhattan apparently has more diversity. BUT these are also hitting or exceeding the limits of the index, no? So I feel like I must have done something terribly wrong. Maybe I was not supposed to bind the datasets beforehand (threecounties.ab)?
+
+No, these values don't exceed the limits of the index. You did it right! The Simpson index (below) is the one limited from 0 to 1. For both Shannon and Simpson indices, higher values = great diversity (i.e. species richness AND evenness).
 
 #The simpson index approached 1; does this mean that each country is just about as diverse as the others? Yet, 1 should be infinite diversity, which doesn't really seem right for these areas. I'm unsure whether I should think of this as a ratio between each sample in a sort of circle/enclosed system that we are looking at with these ratios, but it's my first thought to do so. I also read that this is a measure of dominance, though, and that if it is high like this, it indicates low diversity, so maybe that's really how I should conceptualize this? I also read that this index is not linear, making the implications of .000'th decimals a bit more relevant. 
 
+
 #The bray index is approaching 1 for all three counties. I think, as far as I know right now, that this means the abundance in each sample are very similar to one another, I think. If this is so, I now wish I had used counties that were not local at all to do a better comparison, and will play with this on my own (and also try to check whether I did something off to keep getting near 1:1 ratios)
 
-#I'm also unsure how to understand the way the jaccard index comes out, unless I did something wrong. It looks like it's saying that both Manhattan and Queens are .9912793 in some respect, Manhattan and Kings are both .9902913 in another respect, and Queens and Kings are both .9726027 in another respect; part of why I was thinking of the math being used as a closed system between three data sets. But, each of these are approaching the limit, which is 1, meaning the ratio is approaching 1. Does this then mean the ratio of present to absent species are about equal in each, and so each county has much overlap in species? Or does it mean the ratio indicates that each are just missing the same amount of species? I was trying to study up, but this is new territory for me completely (I’d never heard of any of this before), so it was hard to get it all in. 
+No, with Bray-Curtis index, the 0 means less different, and 1 means more different. So if the values are close to 1 then your samples are not very similar. 
+
+#I'm also unsure how to understand the way the jaccard index comes out, unless I did something wrong. It looks like it's saying that both Manhattan and Queens are .9912793 in some respect, Manhattan and Kings are both .9902913 in another respect, and Queens and Kings are both .9726027 in another respect; part of why I was thinking of the math being used as a closed system between three data sets. But, each of these are approaching the limit, which is 1, meaning the ratio is approaching 1. Does this then mean the ratio of present to absent species are about equal in each, and so each county has much overlap in species? Or does it mean the ratio indicates that each are just missing the same amount of species? I was trying to study up, but this is new territory for me completely (I’d never heard of any of this before), so it was hard to get it all in.
+
+I agree. To be honest, after reading about them a bunch, Bray-Curtis and Jaccard are still confusing me, so we should talk to Dr. Callahan about this.
 
 -------
 
@@ -660,7 +667,7 @@ setwd("/Users/Natalie/Desktop/portfolio-2-eilatanz-MANUAL/")
 planto=read.csv("04 Plant-o-matic Brooklyn.csv")
 head(planto)
 tail(planto)
-names(planto_list)<-c("ListID", "SpeciesID", "Freq")
+names(planto)<-c("ListID", "SpeciesID", "Freq")
 speciesID=paste(planto$Genus, planto$Species, sep=" ")
 speciesID
 
@@ -705,7 +712,6 @@ speciesID
 queenspersist_list=count(speciesID)
 head(queenspersist_list)
 #df<-data.frame(words = unlist(words))
-queenspersist_list=data.frame(chelsea_list)
 queenspersist_list=data.frame("queenspersist", queenspersist_list)
 names(queenspersist_list)<-c("ListID", "SpeciesID", "Freq")
 
@@ -736,7 +742,11 @@ plantochel
 ```
 #how might I (and should I) give more rows with fewer columns/flip the axis on the above?
 
-#I tried to figure out why I could not bind all three using this method, and tried looking up how to add another column to the queens list (which is the problem apparently), but can't find out how. What am I doing wrong? Or am I using this for the wrong purpose? I did bind all three below in part b, though. 
+No, the whole point of the matrify function is to structure your data with a few rows and a lot of columns. Rows = sample areas, Columns = Unique species
+
+#I tried to figure out why I could not bind all three using this method, and tried looking up how to add another column to the queens list (which is the problem apparently), but can't find out how. What am I doing wrong? Or am I using this for the wrong purpose? I did bind all three below in part b, though.
+
+I think this wasn't working because previously on line 670 (I changed it) you had given the planto variable the wrong name, so your data.frame wasn't modified to have the correct column names. In order to bind three different data frames, they HAVE to have the same column names. So since your planto_list hadn't had the column names renamed correctly, it couldn't bind with the others.
 
 ```{r}
 ThenNow2=rbind(planto_list, chelsea_list, queenspersist_list)
@@ -884,4 +894,6 @@ jaccardlotto
 
 #So, in the lists of two bray and jaccard got 0, simpson and shannon each approached or got to the limit (.99 and 3.99); this occurred over and over. In the list of three, bray and jacquard each got 1, I think? As before, I think I must have some issue with my data or my code, and since this happened before, I’m guessing it’s my code? I’m not familiar enough with the concepts to feel like this is actually accurate, but it seems not to be to me so far. 
 
-#The species richness plot I made was… not linear, but had quite the vector with the three datasets/samples. The resulting plot was also exactly the same as with random order. I think I must not be grasping what I’m calling down and why when I’m getting the data, or else something is wrong with my code. I need to spend more time with this I think, especially over break, if I'm to use it for a project. And I'd like to come to office hours for some help if I can! I feel a bit stunted, with the conceptual stuff and the coding being very new to me. 
+#The species richness plot I made was… not linear, but had quite the vector with the three datasets/samples. The resulting plot was also exactly the same as with random order. I think I must not be grasping what I’m calling down and why when I’m getting the data, or else something is wrong with my code. I need to spend more time with this I think, especially over break, if I'm to use it for a project. And I'd like to come to office hours for some help if I can! I feel a bit stunted, with the conceptual stuff and the coding being very new to me.
+
+Yeah, there's a lot to go through here. I think you're making it more complicated then it needs to be, so let's find a time to meet to go through it from square one again. There are still some things I don't understand about a couple of the indices, so we can learn together! Sorry that I don't have more helpful comments at the moment. I just think working through this in person would be much more effective.
